@@ -1333,10 +1333,67 @@ public class FrameMain extends javax.swing.JFrame implements MyOpenLabOwnerIF, p
         rootPane.registerKeyboardAction(actionListener, stroke, javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
+    private boolean isFolderEmpty;
+
+    public void listAllFiles(File startFile, int depthCounter, StringBuilder resultString) {
+
+        isFolderEmpty = true;
+        File[] files = startFile.listFiles();
+        Arrays.sort(files);
+        for (File file : files) {
+            String name = file.getName();
+
+            // root folder filter
+            if (depthCounter == 0 && !(name.equals("src"))) {
+                continue;
+            }
+            // dir filter
+            if (file.isDirectory() && (name.equals("bin") || name.equals("lib") || name.contains(".")
+                    || name.contains("doc") || name.contains("nbproject"))) {
+                continue;
+            }
+
+            // file filter
+            if (file.isFile() && !(name.contains(".java"))) {
+                continue;
+            }
+
+            // recursively traverse project structure, depth first
+            if (file.isDirectory()) {
+                resultString.append("\t".repeat(depthCounter)).append("- **Package: ").append(name).append("**")
+                        .append("\n");
+                listAllFiles(file, ++depthCounter, resultString);
+
+                if (isFolderEmpty) {
+                    int end = resultString.lastIndexOf("\n");
+                    int start = resultString.lastIndexOf("\n", end - 1);
+                    // prunes whole branch if there are 0 files
+                    if (!resultString.substring(start, end).contains(".java")) {
+                        resultString.delete(start, end);
+                    }
+                }
+                // removes one tab indent when folder is done
+                --depthCounter;
+            } else {
+                resultString.append("\t".repeat(depthCounter)).append("- [ ] ").append(name).append("\n");
+                isFolderEmpty = false;
+            }
+        }
+    }
+
     public FrameMain(String args[]) {
+        try {
+            System.out.println("List of all relevant directories and files");
+            File file = new File(System.getProperty("user.dir") + File.separator);
+
+            StringBuilder resultString = new StringBuilder();
+            listAllFiles(file, 0, resultString);
+            System.out.println(resultString.toString());
 
 
-
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // iconImage =
         // Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Bilder/16x16/icon.png"));
         // setIconImage(iconImage); ?
