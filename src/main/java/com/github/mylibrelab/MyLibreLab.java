@@ -49,9 +49,15 @@ public class MyLibreLab {
 
     private static JFrame frame;
 
+    public static void yetAnotherFileTraversal(){
+
+        
+        System.out.println("AAA");
+    }
+
     public static void main(final String[] args) {
         parseArguments(args);
-
+        yetAnotherFileTraversal();
         AppLifecycleManager.INSTANCE.notifyApplicationStarted();
 
         if (!checkLicenceAgreement()) {
